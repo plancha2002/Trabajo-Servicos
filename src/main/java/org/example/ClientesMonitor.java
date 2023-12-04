@@ -5,6 +5,8 @@ import java.util.Random;
 
 public class ClientesMonitor {
     private static ArrayList<Boolean> clientes = new ArrayList<>(10);
+    private static boolean lecturaLlena = true;
+    private static boolean lecturaVacia = true;
 
     public ClientesMonitor() {
     }
@@ -15,18 +17,28 @@ public class ClientesMonitor {
      *              puerta ha entrado
      * @throws InterruptedException
      */
-    public synchronized void entradaCliente(Portero p) throws InterruptedException {
+    public  void entradaCliente(Portero p) throws InterruptedException {
+
        if (comprobarLista()){
-           System.out.println("Portero puerta: "+p.getNumero()+" Ha entrado un cliente. En sala hay: "+clientes.size());
+           System.out.println("Portero puerta: "+p.getNumero()+
+                   " Ha entrado un cliente. En sala hay: "+
+                   (clientes.size()));
+           lecturaVacia = true;
            //Notificaremos a un monitor de tipo salidaCliente() que se haya quedado wait() por sala vacia
-           notifyAll();
+
        } else if (!comprobarLista()) {
-           System.out.println("Portero puerta: "+p.getNumero()+" La sala esta llena. En la sala hay: "+clientes.size());
+           if (lecturaLlena){
+               System.out.println("Portero puerta: "+p.getNumero()+
+                       " La sala esta llena. En la sala hay: "+
+                       (clientes.size()));
+               lecturaLlena = false;
+           }
+
            //Bloquearemos el monitor hasta que salidaCliente() notifique que ha salido un cliente
-           wait();
+
        }
         //codigo para probar un funcionamiento espaciado de funcioens
-      // Thread.sleep(100);
+       Thread.sleep(new Random().nextInt(499)+1);
     }
 
     /**
@@ -35,19 +47,28 @@ public class ClientesMonitor {
      *          puerta ha salido
      * @throws InterruptedException
      */
-    public synchronized void salidaCliente(Portero p) throws InterruptedException {
+    public  void salidaCliente(Portero p) throws InterruptedException {
         if (quitarLista()){
-            System.out.println("Portero puerta: "+p.getNumero()+" Ha salido un cliente quedan : "+(clientes.size()+1));
+            System.out.println("Portero puerta: "+
+                    p.getNumero()+" Ha salido un cliente quedan : "+
+                    (clientes.size()));
+            lecturaLlena = true;
             //Notificaremos a los hilos, un cliente se puede quedar wait() si la sala esta llena.
-            notifyAll();
+
         } else if (!quitarLista()) {
-            System.out.println("Portero puerta: "+p.getNumero()+" Sala vacia");
+            if (lecturaVacia){
+                System.out.println("Portero puerta: "+
+                        p.getNumero()+
+                        " Sala vacia");
+                lecturaVacia = false;
+            }
+
             //en caso de que la sala este vacia esperaremos a que entre un cliente
-            wait();
+
         }
 
         //codigo para probar un funcionamiento espaciado de funcioens
-       // Thread.sleep(100);
+        Thread.sleep(new Random().nextInt(499)+1);
     }
 
     public boolean comprobarLista(){
